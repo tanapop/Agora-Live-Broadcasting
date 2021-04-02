@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "1080589406758",
+    "project_id": "agoralive-9be6e",
+    "storage_bucket": "agoralive-9be6e.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1080589406758:android:e9fae283243176405f4ce7",
+        "android_client_info": {
+          "package_name": "com.kasetnow.streamer"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1080589406758-vlj87p9o6vj3lkaqc3563cap2epv9vd5.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDHnSdKfnmQeIFiSuPeiNNiQRxgNJPnfWs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1080589406758-vlj87p9o6vj3lkaqc3563cap2epv9vd5.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
