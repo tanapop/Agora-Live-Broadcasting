@@ -1,6 +1,6 @@
-/* import 'package:equatable/equatable.dart';
+import 'package:equatable/equatable.dart';
 import 'package:meta/meta.dart';
-import 'package:streamer/utils/provider.dart';
+import 'package:streamer/models/users/provider.dart';
 import 'package:streamer/utils/utils.dart';
 
 class User extends Equatable {
@@ -296,4 +296,3 @@ class User extends Equatable {
     );
   }
 }
- */

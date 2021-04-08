@@ -1,11 +1,10 @@
-/* import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart' hide User;
-import 'package:streamer/utils/provider.dart';
+import 'package:streamer/models/users/provider.dart';
 
-import '../../../imports.dart';
-import '../../notifications/data/notifications.dart';
-import '../../notifications/models/notification.dart';
-import '../models/user.dart';
+import '../models/users/user.dart';
+import '../utils/logger.dart';
 
 mixin UserRepository {
   static final auth = FirebaseAuth.instance;
@@ -74,12 +73,12 @@ mixin UserRepository {
         'followers': FieldValue.arrayUnion([_uid])
       });
     });
-    if (user.isFollowing) {
+    /*if (user.isFollowing) {
       NotificationRepo.sendNotificaion(NotificationModel.create(
         toId: user.id,
         type: NotificationType.Follow,
       ));
-    }
+    }*/
   }
 
   static Future<void> toggleBlock(User user) async {
@@ -97,4 +96,3 @@ mixin UserRepository {
         .call({'userID': userID});
   }
 }
- */

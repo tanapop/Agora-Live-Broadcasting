@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:streamer/components/logo_icon.dart';
-import 'package:streamer/firebaseDB/auth.dart';
+//import 'package:streamer/firebaseDB/auth.dart';
 import 'package:streamer/models/live.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -14,7 +14,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:streamer/utils/styles.dart';
 
 import '../models/global.dart';
-import '../models/post.dart';
+import '../models/posts/post.dart';
 import 'agora/host.dart';
 import 'agora/join.dart';
 
@@ -25,7 +25,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   final FlareControls flareControls = FlareControls();
-  final databaseReference = Firestore.instance;
+  final databaseReference = FirebaseFirestore.instance; //Firestore.instance;
   List<Live> list = [];
   bool ready = false;
   Live liveUser;
@@ -79,13 +79,14 @@ class _HomePageState extends State<HomePage> {
         liveUser = new Live(username: username, me: true, image: image);
         list.add(liveUser);
       });
-      result.documents.forEach((result) {
+      //result.documents.forEach((result) {
+      result.docs.forEach((result) {
         setState(() {
           list.add(new Live(
-              username: result.data['name'],
-              fullName: result.data['name'],
-              image: result.data['image'],
-              channelId: result.data['channel'],
+              username: result.data()['name'],
+              fullName: result.data()['name'],
+              image: result.data()['image'],
+              channelId: result.data()['channel'],
               me: false));
         });
       });

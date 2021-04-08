@@ -1,22 +1,240 @@
-import 'dart:io';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:get/get.dart';
+import 'package:streamer/components/avatar.dart';
+import 'package:streamer/components/button.dart';
+import 'package:streamer/core/config.dart';
+import 'package:streamer/core/exceptions.dart';
+import 'package:streamer/core/storage.dart';
+import 'package:streamer/core/uploader.dart';
+import 'package:streamer/data/register.dart';
+import 'package:streamer/models/users/provider.dart';
+import '../components/form_field.dart';
+import '../imports.dart';
+import '../utils/styles.dart';
+import '../utils/utils.dart';
+import 'widget/gender.dart';
+
+class RegisterScreen extends StatefulWidget {
+  @override
+  _RegisterScreenState createState() => _RegisterScreenState();
+}
+
+class _RegisterScreenState extends State<RegisterScreen> {
+  // Form Fields
+  final formKey = GlobalKey<FormState>();
+  final usernameController = TextEditingController();
+  final firstNameController = TextEditingController();
+  final lastNameController = TextEditingController();
+  final bioController = TextEditingController();
+  final emailController = TextEditingController();
+
+  final photoUploader = AppUploader();
+
+  String gender = "ชาย";
+
+  final usernameErrorText = Rx<String>();
+  final accepted = false.obs;
+  final isLoading = false.obs;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final size = MediaQuery.of(context).size;
+
+    return Scaffold(
+      //appBar: Appbar(titleStr: t.Register),
+      backgroundColor: AppStyles.primaryColorGray,
+      body: Form(
+        key: formKey,
+        child: SingleChildScrollView(
+            child: Stack(children: [
+          //RegisterTopHeader(),
+          Positioned(
+              top: 100,
+              left: size.width / 3.3,
+              right: size.width / 3.3,
+              child: Container(
+                alignment: Alignment.topCenter,
+                decoration: BoxDecoration(
+                    color: AppStyles.primaryColorGray,
+                    borderRadius: BorderRadius.all(Radius.circular(100.0)),
+                    border: Border.all(
+                      color: Colors.white,
+                      width: 4.0,
+                    ) //                 <--- border radius here
+                    ),
+                child: Obx(
+                  () => AvatarWidget(
+                    photoUploader.path(),
+                    onTap: () => photoUploader.pick(context),
+                    radius: 150,
+                  ),
+                ),
+              )),
+          Column(
+            children: <Widget>[
+              //SizedBox(height: 20),
+
+              SizedBox(height: context.height / 2.5),
+              Obx(
+                () => AppTextFormField(
+                  label: "เกษตรนาวไอดี",
+                  icon: Icons.alternate_email,
+                  controller: usernameController,
+                  keyboardType: TextInputType.name,
+                  formatters: [
+                    TextInputFormatter.withFunction((o, n) {
+                      final match =
+                          RegExp(r"^[a-zA-Z0-9_\-]+$").hasMatch(n.text);
+                      return !match
+                          ? o
+                          : n.copyWith(text: n.text.toLowerCase());
+                    })
+                  ],
+                  maxLength: 10,
+                  validator: (s) =>
+                      s.length < 3 ? "กรุณากรอกเกษตรนาวไอดี" : null,
+                  errorText: usernameErrorText(),
+                  borderRadius: 50.0,
+                ),
+              ),
+              Row(
+                children: [
+                  Expanded(
+                    child: AppTextFormField(
+                      label: "ชื่อ",
+                      controller: firstNameController,
+                      maxLength: 10,
+                      validator: (s) => s.isEmpty ? "กรุณากรอกชื่อ" : null,
+                      borderRadius: 50.0,
+                    ),
+                  ),
+                  Expanded(
+                    child: AppTextFormField(
+                      label: "นามสกุล",
+                      controller: lastNameController,
+                      maxLength: 10,
+                      validator: (s) => s.isEmpty ? "กรุณากรอกนามสกุล" : null,
+                      borderRadius: 50.0,
+                    ),
+                  ),
+                ],
+              ),
+              AppTextFormField(
+                label: 'อีเมล',
+                icon: Icons.email,
+                controller: emailController,
+                keyboardType: TextInputType.emailAddress,
+                borderRadius: 50.0,
+              ),
+              SizedBox(height: 20),
+              Align(
+                alignment: Alignment(-0.8, 0),
+                child: Text(
+                  "เลือกเพศ",
+                  style: TextStyle(
+                      color: AppStyles.primaryColorTextField, fontSize: 16),
+                ),
+              ),
+
+              GenderWidget(onSelect: (v) => gender = v),
+              SizedBox(height: 8),
+              ListTile(
+                leading: Obx(
+                  () => Checkbox(
+                    activeColor: AppStyles.primaryColorLight,
+                    checkColor: AppStyles.primaryColorWhite,
+                    value: accepted(),
+                    onChanged: accepted,
+                  ),
+                ),
+                title: Text(
+                  "ยอมรับข้อกำหนดและเงื่อนไข",
+                  style: theme.textTheme.headline6.copyWith(
+                      fontSize: 14,
+                      decoration: TextDecoration.underline,
+                      color: AppStyles.primaryColorLight),
+                ),
+                onTap: () => launchURL(appConfigs.termsURL),
+              ),
+              SizedBox(height: 10),
+              Obx(
+                () => AppButton(
+                  "บันทึก",
+                  color: AppStyles.primaryColorWhite,
+                  isLoading: isLoading(),
+                  onTap: accepted() ? onSave : null,
+                ),
+              ),
+              SizedBox(height: 20),
+            ],
+          ),
+        ])),
+      ),
+    );
+  }
+
+  Future<void> onSave() async {
+    if (!formKey.currentState.validate()) return;
+    isLoading(true);
+    try {
+      final username = usernameController.text;
+      usernameErrorText.nil();
+      if (await RegisterRepository.checkIfUsernameTaken(username)) {
+        usernameErrorText("เกษตรนาวไอดีนี้มีผู้ใช้แล้ว");
+        throw Exception("เกษตรนาวไอดีนี้มีผู้ใช้แล้ว");
+      }
+      String photoURL;
+      if (photoUploader.isPicked) {
+        await photoUploader.upload(
+          StorageHelper.profilesPicRef,
+          onSuccess: (f) => f.when(image: (v) => photoURL = v.path),
+          onFailed: (e) => BotToast.showText(text: e),
+        );
+      }
+      await RegisterRepository.createNewUser(
+        username: username,
+        firstName: firstNameController.text,
+        lastName: lastNameController.text,
+        email: emailController.text,
+        photoURL: photoURL,
+        gender: gender,
+      );
+      await authProvider.login();
+    } catch (e) {
+      BotToast.showText(text: AppAuthException.handleError(e).message);
+    }
+    isLoading(false);
+  }
+}
+
+/* import 'dart:io';
 
 import 'package:streamer/components/form_field.dart';
+import 'package:streamer/core/exceptions.dart';
+import 'package:streamer/core/storage.dart';
+import 'package:streamer/core/uploader.dart';
+import 'package:streamer/data/register.dart';
 import 'package:streamer/firebaseDB/auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:streamer/models/users/provider.dart';
 import 'package:streamer/utils/styles.dart';
 
-class RegScreen extends StatefulWidget {
+import '../imports.dart';
+
+class RegisterScreen extends StatefulWidget {
   static final String id = 'login_screen';
 
   @override
-  _RegScreenState createState() => _RegScreenState();
+  _RegisterScreenState createState() => _RegisterScreenState();
 }
 
-class _RegScreenState extends State<RegScreen> {
+class _RegisterScreenState extends State<RegisterScreen> {
   final _emailController = TextEditingController();
   final _passController = TextEditingController();
   final _nameController = TextEditingController();
@@ -24,6 +242,21 @@ class _RegScreenState extends State<RegScreen> {
   final _lastNameController = TextEditingController();
 
   final _usernameController = TextEditingController();
+
+  final formKey = GlobalKey<FormState>();
+  final usernameController = TextEditingController();
+  final firstNameController = TextEditingController();
+  final lastNameController = TextEditingController();
+  final bioController = TextEditingController();
+  final emailController = TextEditingController();
+  final photoUploader = AppUploader();
+
+  String gender = "ชาย";
+
+  final usernameErrorText = Rx<String>();
+  final accepted = false.obs;
+  final isLoading = false.obs;
+
   bool passwordVisible = false;
   File _image;
   bool submitted = false;
@@ -94,6 +327,39 @@ class _RegScreenState extends State<RegScreen> {
         });
         break;
     }
+  }
+
+  Future<void> onSave() async {
+    if (!formKey.currentState.validate()) return;
+    isLoading(true);
+    try {
+      final username = usernameController.text;
+      usernameErrorText.nil();
+      if (await RegisterRepository.checkIfUsernameTaken(username)) {
+        usernameErrorText("username นี้มีผู้ใช้แล้ว");
+        throw Exception("username นี้มีผู้ใช้แล้ว");
+      }
+      String photoURL;
+      if (photoUploader.isPicked) {
+        await photoUploader.upload(
+          StorageHelper.profilesPicRef,
+          onSuccess: (f) => f.when(image: (v) => photoURL = v.path),
+          onFailed: (e) => BotToast.showText(text: e),
+        );
+      }
+      await RegisterRepository.createNewUser(
+        username: username,
+        firstName: firstNameController.text,
+        lastName: lastNameController.text,
+        email: emailController.text,
+        photoURL: photoURL,
+        gender: gender,
+      );
+      await authProvider.login();
+    } catch (e) {
+      BotToast.showText(text: AppAuthException.handleError(e).message);
+    }
+    isLoading(false);
   }
 
   void usernameError() {
@@ -561,11 +827,12 @@ class _RegScreenState extends State<RegScreen> {
     );
   }
 
-  Future chooseFile() async {
+  /*Future chooseFile() async {
     await ImagePicker.pickImage(source: ImageSource.gallery).then((image) {
       setState(() {
         _image = image;
       });
     });
-  }
+  }*/
 }
+ */

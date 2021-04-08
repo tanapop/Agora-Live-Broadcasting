@@ -1,6 +1,6 @@
-import 'package:streamer/screen/SplashScreen.dart';
+import 'package:streamer/screen/splash_screen.dart';
 import 'package:streamer/screen/home.dart';
-import 'package:streamer/screen/loginScreen.dart';
+import 'package:streamer/screen/login_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';

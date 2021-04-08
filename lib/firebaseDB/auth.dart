@@ -12,7 +12,12 @@ Future<String> signInWithGoogle() async {
   final googleSignInAccount = await googleSignIn.signIn();
   final googleSignInAuthentication = await googleSignInAccount.authentication;
 
-  final credential = GoogleAuthProvider.getCredential(
+  /*final credential = GoogleAuthProvider.getCredential(
+    accessToken: googleSignInAuthentication.accessToken,
+    idToken: googleSignInAuthentication.idToken,
+  );*/
+
+  final credential = GoogleAuthProvider.credential(
     accessToken: googleSignInAuthentication.accessToken,
     idToken: googleSignInAuthentication.idToken,
   );
@@ -21,7 +26,8 @@ Future<String> signInWithGoogle() async {
   final user = authResult.user;
   assert(!user.isAnonymous);
   assert(await user.getIdToken() != null);
-  final currentUser = await _auth.currentUser();
+  //final currentUser = await _auth.currentUser();
+  final currentUser = _auth.currentUser;
   assert(user.uid == currentUser.uid);
 
   return 'signInWithGoogle succeeded: $user';
@@ -48,11 +54,13 @@ Future<int> registerUser(
 
     var user = result.user;
 
-    var info = UserUpdateInfo();
-    info.displayName = fullName;
-    info.photoUrl = '/';
+    //var info = UserUpdateInfo();
+    //var info = UserUpdateInfo();
+    String displayName = fullName;
+    String photoUrl = '/';
 
-    await user.updateProfile(info);
+    //await user.updateProfile(info);
+    await user.updateProfile();
     await FireStoreClass.regUser(
         firstName: firstName,
         lastName: lastName,

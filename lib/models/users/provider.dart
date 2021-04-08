@@ -1,18 +1,18 @@
-/* import 'package:firebase_auth/firebase_auth.dart' hide User;
-import 'package:streamer/models/user.dart';
-import 'package:streamer/utils/logger.dart';
+import 'package:firebase_auth/firebase_auth.dart' hide User;
+import 'package:streamer/core/router.dart';
+import 'package:streamer/data/notifications.dart';
 
-
-import '../imports.dart';
-import '../screen/notifications/data/notifications.dart';
-
+import '../../data/user.dart';
+import '../../imports.dart';
+import '../../utils/logger.dart';
+import 'user.dart';
 
 AuthProvider get authProvider => Get.find();
 
 class AuthProvider {
   AuthProvider._();
   static final auth = FirebaseAuth.instance;
-  String get uid => auth.currentUser?.;
+  String get uid => auth.currentUser?.uid;
 
   final rxUser = Rx<User>();
   User get user => rxUser();
@@ -24,7 +24,7 @@ class AuthProvider {
     await c._fetchUser();
     if (auth.currentUser != null) {
       if (c.user == null) {
-        //0.5.delay().then((_) => AppNavigator.toRegister());
+        0.5.delay().then((_) => AppNavigator.toRegister());
       } else {
         NotificationRepo.registerNotification(false);
       }
@@ -55,7 +55,7 @@ class AuthProvider {
       await _fetchUser();
       Get.until((r) => r.isFirst);
       if (user == null) {
-        // AppNavigator.toRegister();
+        AppNavigator.toRegister();
       } else {
         NotificationRepo.registerNotification(true);
       }
@@ -79,4 +79,3 @@ class AuthProvider {
     BotToast.closeAllLoading();
   }
 }
- */

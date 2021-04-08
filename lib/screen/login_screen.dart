@@ -1,5 +1,6 @@
+import 'package:streamer/core/router.dart';
 import 'package:streamer/firebaseDB/auth.dart';
-import 'package:streamer/screen/regScreen.dart';
+import 'package:streamer/screen/register_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:streamer/utils/styles.dart';
@@ -380,11 +381,12 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
             GestureDetector(
               onTap: () {
-                Navigator.push(
+                AppNavigator.toRegister();
+                /*Navigator.push(
                     context,
                     MaterialPageRoute(
                       builder: (context) => RegScreen(),
-                    ));
+                    ));*/
               },
               child: Container(
                 height: 40,
